@@ -1,0 +1,1 @@
+g++ -o run src/main.cpp src/sha256.cpp src/generate_random_number.cpp src/new_user.cpp src/split.cpp -I"C:/msys64/ucrt64/include" -L"C:/msys64/ucrt64/lib" -lssl -lcrypto
