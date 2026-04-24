@@ -7,7 +7,7 @@ User new_user() {
     std::string pblc_key = sha256(prv_key);
     std::string address = "btc1" + generate_random_number(50);
     
-    User new_user = User(prv_key, pblc_key, address, 3.0);
+    User new_user = User(prv_key, pblc_key, address, 3.0, {});
 
     return new_user;
 }

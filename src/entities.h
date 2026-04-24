@@ -19,13 +19,23 @@ struct Block {
     std::vector<Transaction> transaction;
 };
 
+struct UTXO {
+    UTXO(double amount, std::string public_key, std::string txid_transaction, int vout)
+        : amount(amount), public_key(public_key), txid_transaction(txid_transaction), vout(vout) {}
+    double amount; 
+    std::string public_key;
+    std::string txid_transaction;
+    int vout;
+};
+
 struct User {
-    User(std::string priv, std::string pub, std::string a, double b)
-        : privateKey(priv), publicKey(pub), address(a), balance(b) {}
+    User(std::string priv, std::string pub, std::string a, double b, std::vector<UTXO> utxos)
+        : privateKey(priv), publicKey(pub), address(a), balance(b), utxos(utxos) {}
     std::string privateKey;
     std::string publicKey;
     std::string address;
     double balance;
+    std::vector<UTXO> utxos;
 };
 
 struct Transaction {
@@ -47,13 +57,6 @@ struct Transaction {
     int nb_adresses_src;
     std::vector<std::string> adresses_sources;
     std::vector<std::string> adresses_dest;
-};
-
-struct UTXO {
-    double amount; 
-    std::string private_key;
-    std::string txid_transaction;
-    int vout;
 };
 
 #endif
