@@ -17,6 +17,7 @@
 #include "is_currentUser.h"
 #include "find_user.h"
 #include "utxos.h"
+#include "block.h"
 
 #include <openssl/sha.h>
 
@@ -26,7 +27,7 @@ int main() {
     srand(time(0));
     std::vector<User> users;
     Mempool mempool;
-    Block block;
+    std::vector<Block> blocks;
     User currentUser = User("", "", "", 0.0, {});
 
     for(int i =0; i<3; i++){
@@ -42,7 +43,6 @@ int main() {
         std::cout << "user_balance: " << u.balance << "\n";
         std::cout << "==========================================" << "\n";
     };
-
     
 
     while(true) {

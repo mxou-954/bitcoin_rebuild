@@ -6,4 +6,6 @@
 using namespace std;
 
 string sha256(const string &str);
+string generate_hash_with_zeros(int difficulty);
+
 #endif

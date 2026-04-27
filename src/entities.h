@@ -41,18 +41,18 @@ struct Transaction {
 struct Block {
     Block() {}
 
-    Block(int i, std::string h, std::string p, int amount, time_t timestamp,
-    int nonce, int difficulty, std::vector<Transaction> transaction)
-        : index(i), hash(h), prevHash(p), amount(amount), timestamp(timestamp), nonce(nonce),
-        difficulty(difficulty), transactions(transactions) {}
-    int index;
-    std::string hash;
-    std::string prevHash;
-    int amount; 
-    time_t timestamp;
-    int nonce;
-    int difficulty;
-    std::vector<Transaction> transactions;
+    Block(int index, std::string hash, std::string prevHash, int amount, time_t timestamp,
+    int nonce, int difficulty, std::vector<Transaction> transaction, bool resolved)
+        : index(index), hash(hash), prevHash(prevHash), amount(amount), timestamp(timestamp), nonce(nonce),
+        difficulty(difficulty), transactions(transactions), resolved(resolved) {}
+    int index = 0;
+    std::string hash = "";
+    std::string prevHash = "";
+    int amount = 0; 
+    time_t timestamp = 0;
+    int nonce = 0;
+    int difficulty = 0;
+    std::vector<Transaction> transactions = {};
     bool resolved = false;
 };
 
