@@ -16,6 +16,7 @@
 #include "btc_to_satochi.h" 
 #include "is_currentUser.h"
 #include "find_user.h"
+#include "utxos.h"
 
 #include <openssl/sha.h>
 
@@ -24,6 +25,8 @@ using namespace std;
 int main() {
     srand(time(0));
     std::vector<User> users;
+    Mempool mempool;
+    Block block;
     User currentUser = User("", "", "", 0.0, {});
 
     for(int i =0; i<3; i++){
@@ -39,6 +42,8 @@ int main() {
         std::cout << "user_balance: " << u.balance << "\n";
         std::cout << "==========================================" << "\n";
     };
+
+    
 
     while(true) {
 
@@ -68,6 +73,7 @@ int main() {
         if(is_connected){
             if(user_command_part[0] == "/pay") {
                 // /pay [publicKey] [amount] [address]
+                // prendre amount en BTC
 
                 std::optional<User> match_address = find_user_by_address(user_command_part[3], users);
                 std::optional<User> match_public_key = find_user_by_public_key(user_command_part[1], users);
@@ -87,22 +93,31 @@ int main() {
                     std::cout << "Vous n'avez pas les fonds nécessaire pour le payement !" << std::endl;
                     continue;
                 }
+                if(user_command_part[3] == currentUser.address){
+                    std::cout << "Vous ne pouvez pas vous envoyer de l'argent depuis votre propre compte !" << std::endl;
+                    continue;
+                }
 
                 double addition = 0.0;
                 std::vector<UTXO> to_use;
                 std::vector<UTXO> currentUser_utxos = currentUser.utxos;
-                while(addition < stod(user_command_part[2])){
-                    for(UTXO utxo: currentUser_utxos) {
-
-                        if(to_use.size() == currentUser_utxos.size()){
-                            std::cout << "Fonds insuffisants !" << std::endl;
-                            break;
-                        }
-
-                        addition = addition + utxo.amount;
-                        to_use.push_back(utxo);
-                    }
+                while(addition < stod(user_command_part[2]) && !currentUser_utxos.empty()){
+                    UTXO utxo = currentUser_utxos.back();
+                    addition = addition + utxo.amount;
+                    to_use.push_back(utxo);
+                    currentUser_utxos.pop_back();
                 }
+
+                currentUser.utxos = currentUser_utxos;
+                double amount_output = addition - stod(user_command_part[2]);
+
+                // Changer le generate number par le vrai id de la transaction
+                UTXO to_sender = create_utxo(currentUser, amount_output, generate_random_number(50), 0); 
+                UTXO to_receiver = create_utxo(match_address.value(), stod(user_command_part[2]), generate_random_number(50), 0);
+
+                std::vector<UTXO> to_return;
+                to_return.push_back(to_sender);
+                to_return.push_back(to_receiver);
 
                 time_t timestamp;
                 double vsize = 160.0; // vbytes
@@ -120,16 +135,44 @@ int main() {
                     vsize * fee_per_vbyte,
                     vsize, 
                     fee_per_vbyte,
-                    to_use.size(),
-                    0,
-                    0,
+                    to_use.size(), // nb_input
+                    0, // nb_output
+                    0, // nb_adresses_src
                     adresses_sources,
-                    adresses_dest
+                    adresses_dest, 
+                    to_use, 
+             to_return
                 );
 
+                if (mempool.transactions.size() == mempool.max_size){
+                    mempool.transactions.push_back(new_transaction);
+                }
+                
+            } else if (user_command_part[0] == "/transfer") {
+                // /transfer [euros] [publicKey]
+                if(sha256(currentUser.privateKey) != user_command_part[2]){
+                    std::cout << "La clé public n'est pas celle lié a votre compte." << std::endl;
+                    continue;
+                }
 
+                double euros = stod(user_command_part[1]);
+                double btc_price = 85000.0; // prix constant pour l'instant
+                       double montant_btc = euros / btc_price;
+                double montant_satoshis = btc_to_satochi(montant_btc);
 
+                UTXO new_utxo = create_utxo(currentUser, montant_satoshis, generate_random_number(50), 0);
 
+                currentUser.utxos.push_back(new_utxo);
+                currentUser.balance += montant_btc;
+                
+            } else if (user_command_part[0] == "/balance") {
+                // /balance
+                std::cout << "→ Balance : " << satochi_to_btc(currentUser.balance) << "BTC \n" << std::endl;
+                std::cout << "→ UTXOs : \n";
+                for(UTXO utxo : currentUser.utxos){
+                    std::cout << "→ txid: " << utxo.txid_transaction << ", vout: " << utxo.vout << ", amount: " << utxo.amount << "\n";
+                }
+                
             } else if (user_command_part[0] == "/swipe"){
                 // /swipe [current_user_publicKey] [next_user_publicKey]
                 if(user_command_part[1] != currentUser.publicKey){
@@ -171,6 +214,33 @@ int main() {
                 }else {
                     std::cout << "Cette addresse n'est attribué a aucun utilisateur !" << std::endl;
                     continue;
+                }
+            } else if (user_command_part[0] == "/users") {
+                for(User user : users) {
+                    std::cout << "→ adresse: " << user.address << ", balance: " << user.balance << ", publicKey: " << user.publicKey << "\n";
+                }
+            } else if (user_command_part[0] == "/mempool") {
+                if(mempool.transactions.empty()){
+                    std::cout << "Le mempool est vide !" << std::endl;
+                } else {
+                    std::cout << mempool.transactions.size() << " transaction(s) en attente\n" << std::endl;
+                    for(Transaction item : mempool.transactions) {
+                        std::cout << "txid    : " << item.txid << "\n";
+                        std::cout << "montant : " << satochi_to_btc(item.value_btc) << " BTC\n";
+                        std::cout << "fee     : " << item.fee << " sats\n";
+                        std::cout << "inputs  : " << item.nb_input << "\n";
+                        std::cout << "outputs : " << item.nb_output << "\n";
+                        std::cout << "de      : ";
+                        for(std::string src : item.adresses_sources){
+                            std::cout << src << " ";
+                        }
+                        std::cout << "\n";
+                        std::cout << "vers    : ";
+                        for(std::string dest : item.adresses_dest){
+                            std::cout << dest << " ";
+                        }
+                        std::cout << "\n---\n";
+                    }
                 }
             } else {
                 std::cout << "La commande " << user_command_part[0] << " n'existe pas !" << std::endl;

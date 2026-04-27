@@ -1,3 +1,5 @@
+#include "utxos.h"
+
 #include <iostream>
 #include <string>
 #include <optional>
@@ -21,8 +23,4 @@ std::optional<UTXO> find_utxo_by_txid_transaction(User user, std::string txid_tr
             return utxo;
         }
     }
-}
-
-void destroy_utxo(User user, std::string txid_transaction){
-    user
 }

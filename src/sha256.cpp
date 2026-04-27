@@ -17,3 +17,17 @@ string sha256(const string &str)
     }
     return ss.str();
 }
+
+// Génère n'importe quel hash qui commence par "x*0"
+std::string generate_hash_with_zeros(int difficulty) {
+    std::string target(difficulty, '0');
+    int nonce = 0;
+    
+    while(true) {
+        std::string hash = sha256(std::to_string(nonce));
+        if(hash.substr(0, difficulty) == target){
+            return hash;
+        }
+        nonce++;
+    }
+}
