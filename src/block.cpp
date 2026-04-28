@@ -2,10 +2,24 @@
 #include "entities.h"
 #include "generate_random_number.h"
 
-#include <iostream>
+#include <sstream>
 #include <string>
+#include <iostream>
 #include <optional>
 #include <ctime>
+
+Block genesis_block() {
+    time_t timestamp;
+    Block genesis;
+    genesis.index     = 0;
+    genesis.prevHash  = "0000000000000000";
+    genesis.timestamp = time(&timestamp);
+    genesis.difficulty = 2;
+    genesis.nonce     = 0;
+    genesis.transactions = {};
+    genesis.hash      = generate_hash_with_zeros(2);
+    return genesis;
+}
 
 std::optional<Block> find_block_by_index(std::vector<Block> blocks, int index) {
     for(Block block : blocks) {
@@ -17,23 +31,91 @@ std::optional<Block> find_block_by_index(std::vector<Block> blocks, int index) {
     return std::nullopt;
 }
 
-Block new_block(std::vector<Block> blocks){
-    srand(time(0));
-    time_t timestamp;
-    Block last_block = blocks.back();
-    std::string prev_hash = last_block.hash;
-    int new_index = last_block.index + 1;
-    int difficulty = 2;
+std::optional<Block> find_block_by_hash(std::vector<Block> blocks, std::string hash) {
+    for(Block block : blocks) {
+        if(block.hash == hash){
+            return block;
+        } 
+    }
+    std::cout << "Block introuvable !" << std::endl;
+    return std::nullopt;
+}
 
-    Block block = Block(
-        new_index,
-        generate_hash_with_zeros(stoi(difficulty)),
-        prev_hash,
-        0,
-        time(&timestamp),
-        0,
-        stoi(difficulty),
-        {},
-        false
-    );
+Block new_block(std::vector<Block>& blockchain, 
+                std::vector<Transaction> transactions) {
+    
+    Block last = blockchain.back();
+
+    time_t timestamp;
+    int difficulty = 2;
+    
+    Block block;
+    block.index        = last.index + 1;
+    block.prevHash     = last.hash;
+    block.timestamp    = time(&timestamp);
+    block.difficulty   = difficulty;
+    block.transactions = transactions;
+    block.nonce        = 0;
+
+    blockchain.push_back(block);
+    
+    return block;
+}
+
+bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool) {
+    if(blockchain.empty()){
+        blockchain.push_back(genesis_block());
+        new_block(blockchain, mempool.transactions);
+    }
+    
+    Block& block = blockchain.back();
+    if(block.resolved){
+        std::cout << "Ce bloc est déjà résolu !" << std::endl;
+        return false;
+    }
+    
+    int difficulty = block.difficulty;
+    std::string target(difficulty, '0');
+    
+    std::stringstream ss;
+    ss << block.index
+       << block.prevHash
+       << block.timestamp
+       << nonce;
+    
+    std::string computed_hash = sha256(ss.str());
+    
+    if(computed_hash.substr(0, difficulty) != target){
+        std::cout << "Hash invalide !" << std::endl;
+        return false;
+    }
+    
+    block.nonce    = nonce;
+    block.hash     = computed_hash;
+    block.resolved = true;
+    
+    std::cout << "Bloc miné ! nonce=" << nonce << std::endl;
+    std::cout << "hash=" << computed_hash << std::endl;
+
+    new_block(blockchain, mempool.transactions);
+    mempool.transactions.clear();
+    
+    return true;
+}
+
+Block view_block(Block block) {
+    std::cout << "==========================================\n";
+    std::cout << "index      : " << block.index << "\n";
+    std::cout << "hash       : " << block.hash << "\n";
+    std::cout << "prevHash   : " << block.prevHash << "\n";
+    std::cout << "timestamp  : " << block.timestamp << "\n";
+    std::cout << "nonce      : " << block.nonce << "\n";
+    std::cout << "difficulty : " << block.difficulty << "\n";
+    std::cout << "resolved   : " << (block.resolved ? "oui" : "non") << "\n";
+    std::cout << "transactions : " << block.transactions.size() << " tx\n";
+    for(Transaction t : block.transactions) {
+        std::cout << "  → txid : " << t.txid << "\n";
+        std::cout << "     montant : " << t.value_btc << " BTC\n";
+    }
+    std::cout << "==========================================\n";
 }

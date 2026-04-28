@@ -24,3 +24,11 @@ std::optional<UTXO> find_utxo_by_txid_transaction(User user, std::string txid_tr
         }
     }
 }
+
+double utxos_sum_balance(User user){
+    double result = 0;
+    for(UTXO utxo : user.utxos){
+        result = result + utxo.amount;
+    }
+    return result;
+}

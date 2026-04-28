@@ -18,6 +18,8 @@
 #include "find_user.h"
 #include "utxos.h"
 #include "block.h"
+#include "sync_user.h"
+#include "help.h"
 
 #include <openssl/sha.h>
 
@@ -44,7 +46,6 @@ int main() {
         std::cout << "==========================================" << "\n";
     };
     
-
     while(true) {
 
         // Controller de sécurité //
@@ -68,6 +69,9 @@ int main() {
 
         std::vector<std::string> user_command_part = split(user_command, delimiter);
 
+        if (user_command_part[0] == "/help") {
+            help();
+        }
 
         // Commandes qui demandent d'etre connecté a un compte 
         if(is_connected){
@@ -96,6 +100,10 @@ int main() {
                 if(user_command_part[3] == currentUser.address){
                     std::cout << "Vous ne pouvez pas vous envoyer de l'argent depuis votre propre compte !" << std::endl;
                     continue;
+                } if(utxos_sum_balance(currentUser) < stod(user_command_part[2])){
+                    std::cout << "Vous n'avez pas les fonds nécessaire pour le payement !" << std::endl;
+                    continue;
+
                 }
 
                 double addition = 0.0;
@@ -108,18 +116,22 @@ int main() {
                     currentUser_utxos.pop_back();
                 }
 
+                time_t timestamp = time(nullptr);
                 currentUser.utxos = currentUser_utxos;
                 double amount_output = addition - stod(user_command_part[2]);
 
+                std::stringstream ss;
+                ss << timestamp << currentUser.address << user_command_part[3] << user_command_part[2];
+                std::string txid = sha256(ss.str());
+
                 // Changer le generate number par le vrai id de la transaction
-                UTXO to_sender = create_utxo(currentUser, amount_output, generate_random_number(50), 0); 
-                UTXO to_receiver = create_utxo(match_address.value(), stod(user_command_part[2]), generate_random_number(50), 0);
+                UTXO to_sender = create_utxo(currentUser, amount_output, txid, 0); 
+                UTXO to_receiver = create_utxo(match_address.value(), stod(user_command_part[2]), txid, 1);
 
                 std::vector<UTXO> to_return;
                 to_return.push_back(to_sender);
                 to_return.push_back(to_receiver);
 
-                time_t timestamp;
                 double vsize = 160.0; // vbytes
                 double fee_per_vbyte = 10.0; // sat/vbytes
                 std::vector<std::string> adresses_sources;
@@ -129,7 +141,7 @@ int main() {
                 adresses_dest.push_back(user_command_part[2]);
                 
                 Transaction new_transaction = Transaction(
-                    generate_random_number(50), 
+                    txid, 
                     time(&timestamp),
                     btc_to_satochi(stod(user_command_part[2])),
                     vsize * fee_per_vbyte,
@@ -141,10 +153,19 @@ int main() {
                     adresses_sources,
                     adresses_dest, 
                     to_use, 
-             to_return
+                    to_return
                 );
 
-                if (mempool.transactions.size() == mempool.max_size){
+                match_address.value().utxos.push_back(to_receiver);
+                currentUser.utxos.push_back(to_sender);
+
+                match_address.value().balance = utxos_sum_balance(match_address.value());
+                currentUser.balance = utxos_sum_balance(currentUser);
+
+                sync_user(users, currentUser);
+                sync_user(users, match_address.value());
+
+                if (mempool.transactions.size() < mempool.max_size){
                     mempool.transactions.push_back(new_transaction);
                 }
                 
@@ -164,7 +185,34 @@ int main() {
 
                 currentUser.utxos.push_back(new_utxo);
                 currentUser.balance += montant_btc;
+                sync_user(users, currentUser);
                 
+            } else if (user_command_part[0] == "/mine") {
+                // /mine [nonce]
+                bool result = mine(blocks, stoi(user_command_part[1]), mempool);
+                
+            } else if (user_command_part[0] == "/blockchain") {
+                // /blockchain
+                for(const Block& block : blocks){
+                    view_block(block);
+                }
+                
+            } else if (user_command_part[0] == "/find_block_by_index") {
+                // /find_block_by_index [index]
+                std::optional<Block> result = find_block_by_index(blocks, stoi(user_command_part[1]));
+                if(result.has_value()){
+                    view_block(result.value());
+                } else {
+                    std::cout << "Aucun block ne correspond a cet index !" << std::endl;
+                }
+            } else if (user_command_part[0] == "/find_block_by_hash") {
+                // /find_block_by_hash [hash]
+                std::optional<Block> result = find_block_by_hash(blocks, user_command_part[1]);
+                if(result.has_value()){
+                    view_block(result.value());
+                } else {
+                    std::cout << "Aucun block ne correspond a cet index !" << std::endl;
+                }
             } else if (user_command_part[0] == "/balance") {
                 // /balance
                 std::cout << "→ Balance : " << satochi_to_btc(currentUser.balance) << "BTC \n" << std::endl;
@@ -185,6 +233,7 @@ int main() {
                 if(match.has_value()) {
                     currentUser = match.value();
                     std::cout << "Vous avez switch correctement entre deux comptes ! \n" << std::endl;
+                    sync_user(users, currentUser);
                 } else {
                     std::cout << "Veuillez vérifier que la clé publique du compte de destination est correcte ! \n" << std::endl;
                     continue;
@@ -192,7 +241,7 @@ int main() {
             } else if (user_command_part[0] == "/d"){
                 currentUser = User("", "", "", 0.0, {});
                 std::cout << "Vous avez été déconnecté !";
-                continue;
+                return 0;
             } else {
                 std::cout << "La commande " << user_command_part[0] << " n'existe pas !" << std::endl;
                 continue;

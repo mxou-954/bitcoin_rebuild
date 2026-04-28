@@ -7,14 +7,10 @@
 
 using namespace std;
 
-Block new_block(int index,
-    std::string hash,
-    std::string prevHash,
-    int amount,
-    time_t timestamp,
-    int nonce,
-    int difficulty,
-    std::vector<Transaction> transactions,
-    bool resolved = false);
+std::optional<Block> find_block_by_index(std::vector<Block> blocks, int index);
+std::optional<Block> find_block_by_hash(std::vector<Block> blocks, std::string hash);
+Block new_block(std::vector<Block>& blockchain, std::vector<Transaction> transactions);
+bool mine(std::vector<Block>& blockchain, int nonce, Mempool mempool);
+Block view_block(Block block);
 
 #endif

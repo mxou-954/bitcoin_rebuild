@@ -41,14 +41,13 @@ struct Transaction {
 struct Block {
     Block() {}
 
-    Block(int index, std::string hash, std::string prevHash, int amount, time_t timestamp,
+    Block(int index, std::string hash, std::string prevHash, time_t timestamp,
     int nonce, int difficulty, std::vector<Transaction> transaction, bool resolved)
-        : index(index), hash(hash), prevHash(prevHash), amount(amount), timestamp(timestamp), nonce(nonce),
+        : index(index), hash(hash), prevHash(prevHash), timestamp(timestamp), nonce(nonce),
         difficulty(difficulty), transactions(transactions), resolved(resolved) {}
     int index = 0;
     std::string hash = "";
     std::string prevHash = "";
-    int amount = 0; 
     time_t timestamp = 0;
     int nonce = 0;
     int difficulty = 0;
