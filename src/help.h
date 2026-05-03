@@ -4,6 +4,6 @@
 #include <string>
 #include "entities.h"
 
-std::string help();
+void help();
 
 #endif

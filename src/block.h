@@ -7,10 +7,11 @@
 
 using namespace std;
 
+Block genesis_block();
 std::optional<Block> find_block_by_index(std::vector<Block> blocks, int index);
 std::optional<Block> find_block_by_hash(std::vector<Block> blocks, std::string hash);
 Block new_block(std::vector<Block>& blockchain, std::vector<Transaction> transactions);
-bool mine(std::vector<Block>& blockchain, int nonce, Mempool mempool);
-Block view_block(Block block);
+bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool);
+void view_block(Block block);
 
 #endif

@@ -1,6 +1,7 @@
 #include "sha256.h"
 #include "entities.h"
 #include "generate_random_number.h"
+#include "write_and_read.h"
 
 #include <sstream>
 #include <string>
@@ -93,6 +94,8 @@ bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool) {
     block.nonce    = nonce;
     block.hash     = computed_hash;
     block.resolved = true;
+
+    export_blockchain_in_registre("../registre/blockchain.json", blockchain);
     
     std::cout << "Bloc miné ! nonce=" << nonce << std::endl;
     std::cout << "hash=" << computed_hash << std::endl;
@@ -103,7 +106,7 @@ bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool) {
     return true;
 }
 
-Block view_block(Block block) {
+void view_block(Block block) {
     std::cout << "==========================================\n";
     std::cout << "index      : " << block.index << "\n";
     std::cout << "hash       : " << block.hash << "\n";

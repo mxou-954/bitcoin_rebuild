@@ -20,6 +20,8 @@
 #include "block.h"
 #include "sync_user.h"
 #include "help.h"
+#include "write_and_read.h"
+#include "security_check_for_pay.h"
 
 #include <openssl/sha.h>
 
@@ -27,9 +29,11 @@ using namespace std;
 
 int main() {
     srand(time(0));
-    std::vector<User> users;
-    Mempool mempool;
-    std::vector<Block> blocks;
+
+    std::vector<User> users    = read_users("../registre/users.json");
+    std::vector<Block> blocks   = read_blockchain("../registre/blockchain.json");
+    Mempool mempool  = read_mempool("../registre/mempool.json");
+
     User currentUser = User("", "", "", 0.0, {});
 
     for(int i =0; i<3; i++){
@@ -62,18 +66,10 @@ int main() {
         }
         
         std::getline(std::cin, user_command);
-        if(user_command == "/q"){
-            std::cout << "A bientot !" << std::endl;
-            return false;
-        }
-
         std::vector<std::string> user_command_part = split(user_command, delimiter);
 
-        if (user_command_part[0] == "/help") {
-            help();
-        }
 
-        // Commandes qui demandent d'etre connecté a un compte 
+        // NECESSITE D'ETRE CONNECTE 
         if(is_connected){
             if(user_command_part[0] == "/pay") {
                 // /pay [publicKey] [amount] [address]
@@ -81,29 +77,9 @@ int main() {
 
                 std::optional<User> match_address = find_user_by_address(user_command_part[3], users);
                 std::optional<User> match_public_key = find_user_by_public_key(user_command_part[1], users);
-                if(!match_address.has_value()){
-                    std::cout << "L'adresse de destination n'appartient a aucun utilisateur !" << std::endl;
-                    continue;
-                }
-                if(!match_public_key.has_value()){
-                    std::cout << "La clé public ne correspond pas a un utilisateur valide !" << std::endl;
-                    continue;
-                }
-                if(sha256(currentUser.privateKey) != user_command_part[1]){
-                    std::cout << "La clé public n'est pas celle lié a votre compte." << std::endl;
-                    continue;
-                }
-                if(stod(user_command_part[2]) > currentUser.balance){
-                    std::cout << "Vous n'avez pas les fonds nécessaire pour le payement !" << std::endl;
-                    continue;
-                }
-                if(user_command_part[3] == currentUser.address){
-                    std::cout << "Vous ne pouvez pas vous envoyer de l'argent depuis votre propre compte !" << std::endl;
-                    continue;
-                } if(utxos_sum_balance(currentUser) < stod(user_command_part[2])){
-                    std::cout << "Vous n'avez pas les fonds nécessaire pour le payement !" << std::endl;
-                    continue;
 
+                if(!security_check_for_pay(currentUser, match_address, match_public_key, user_command_part)){
+                    continue;
                 }
 
                 double addition = 0.0;
@@ -168,6 +144,9 @@ int main() {
                 if (mempool.transactions.size() < mempool.max_size){
                     mempool.transactions.push_back(new_transaction);
                 }
+
+                export_user_in_registre("../registre/users.json", users);
+                export_mempool_in_registre("../registre/mempool.json", mempool);
                 
             } else if (user_command_part[0] == "/transfer") {
                 // /transfer [euros] [publicKey]
@@ -178,7 +157,7 @@ int main() {
 
                 double euros = stod(user_command_part[1]);
                 double btc_price = 85000.0; // prix constant pour l'instant
-                       double montant_btc = euros / btc_price;
+                double montant_btc = euros / btc_price;
                 double montant_satoshis = btc_to_satochi(montant_btc);
 
                 UTXO new_utxo = create_utxo(currentUser, montant_satoshis, generate_random_number(50), 0);
@@ -186,6 +165,7 @@ int main() {
                 currentUser.utxos.push_back(new_utxo);
                 currentUser.balance += montant_btc;
                 sync_user(users, currentUser);
+                export_user_in_registre("../registre/users.json", users);
                 
             } else if (user_command_part[0] == "/mine") {
                 // /mine [nonce]
@@ -215,10 +195,10 @@ int main() {
                 }
             } else if (user_command_part[0] == "/balance") {
                 // /balance
-                std::cout << "→ Balance : " << satochi_to_btc(currentUser.balance) << "BTC \n" << std::endl;
-                std::cout << "→ UTXOs : \n";
+                std::cout << "-> Balance : " << satochi_to_btc(currentUser.balance) << "BTC \n" << std::endl;
+                std::cout << "-> UTXOs : \n";
                 for(UTXO utxo : currentUser.utxos){
-                    std::cout << "→ txid: " << utxo.txid_transaction << ", vout: " << utxo.vout << ", amount: " << utxo.amount << "\n";
+                    std::cout << "-> txid: " << utxo.txid_transaction << ", vout: " << utxo.vout << ", amount: " << utxo.amount << "\n";
                 }
                 
             } else if (user_command_part[0] == "/swipe"){
@@ -238,14 +218,30 @@ int main() {
                     std::cout << "Veuillez vérifier que la clé publique du compte de destination est correcte ! \n" << std::endl;
                     continue;
                 } 
+            } 
+            
+            
+            else if (user_command_part[0] == "/help") {
+                help();
+                continue;
             } else if (user_command_part[0] == "/d"){
                 currentUser = User("", "", "", 0.0, {});
                 std::cout << "Vous avez été déconnecté !";
                 return 0;
+            } else if (user_command == "/q"){
+                std::cout << "A bientot !" << std::endl;
+                return false;
             } else {
                 std::cout << "La commande " << user_command_part[0] << " n'existe pas !" << std::endl;
                 continue;
             }
+
+
+
+
+
+
+
         } else { // Commandes qui ne demandent pas d'etre connecté a un compte 
             if (user_command_part[0] == "/c"){
                 // /c [publicKey]
@@ -291,6 +287,16 @@ int main() {
                         std::cout << "\n---\n";
                     }
                 }
+            } 
+            
+            
+            
+            else if (user_command_part[0] == "/help") {
+                help();
+                continue;
+            } else if (user_command == "/q"){
+                std::cout << "A bientot !" << std::endl;
+                return false;
             } else {
                 std::cout << "La commande " << user_command_part[0] << " n'existe pas !" << std::endl;
                 continue;

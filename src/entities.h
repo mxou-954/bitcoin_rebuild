@@ -15,6 +15,8 @@ struct UTXO {
 };
 
 struct Transaction {
+    Transaction() {}
+
     Transaction(std::string txid, time_t timestamp, double value_btc, 
         double fee, double vsize, double fee_per_vbyte, int nb_input, int nb_output,
         int nb_adresses_src, std::vector<std::string> adresses_sources, 

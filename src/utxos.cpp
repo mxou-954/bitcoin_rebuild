@@ -14,6 +14,7 @@ UTXO create_utxo(User user, double amount, std::string txid_transaction, int vou
         txid_transaction,
         vout
     );
+    return new_utxo;
 }
 
 std::optional<UTXO> find_utxo_by_txid_transaction(User user, std::string txid_transaction){
@@ -23,6 +24,7 @@ std::optional<UTXO> find_utxo_by_txid_transaction(User user, std::string txid_tr
             return utxo;
         }
     }
+    return std::nullopt;
 }
 
 double utxos_sum_balance(User user){

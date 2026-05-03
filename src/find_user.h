@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "entities.h"
 #include <optional>
 
 #include "entities.h"

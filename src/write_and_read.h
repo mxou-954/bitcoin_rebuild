@@ -7,6 +7,14 @@
 using json = nlohmann::json;
 
 void is_file_exist(std::string path);
-json export_user_in_registre(std::string path, User user)
+
+std::vector<User> read_users(std::string path);
+std::vector<Block> read_blockchain(std::string path);
+Mempool read_mempool(std::string path);
+
+void export_blockchain_in_registre(std::string path, std::vector<Block> blocks);
+void export_user_in_registre(std::string path, std::vector<User> users);
+void export_mempool_in_registre(std::string path, Mempool mempool);
+
 
 #endif
