@@ -22,6 +22,10 @@
 #include "help.h"
 #include "write_and_read.h"
 #include "security_check_for_pay.h"
+#include "user_input.h"
+#include "transfer_eur_to_btc.h"
+#include "mempool_output.h"
+#include "login.h"
 
 #include <openssl/sha.h>
 
@@ -56,17 +60,10 @@ int main() {
         bool is_connected = is_currentUser(currentUser);
         ////////////////////////////
 
-        std::string user_command = "";
+        // Gestion de l'input utilisateur //
         std::string delimiter = " ";
-
-        if (currentUser.address == ""){
-            std::cout << "\n" << "guest >> ";
-        } else {
-            std::cout << "\n" << currentUser.address << " >> ";
-        }
-        
-        std::getline(std::cin, user_command);
-        std::vector<std::string> user_command_part = split(user_command, delimiter);
+        std::vector<std::string> user_command_part = user_input(currentUser, delimiter);
+        ////////////////////////////
 
 
         // NECESSITE D'ETRE CONNECTE 
@@ -150,34 +147,17 @@ int main() {
                 
             } else if (user_command_part[0] == "/transfer") {
                 // /transfer [euros] [publicKey]
-                if(sha256(currentUser.privateKey) != user_command_part[2]){
-                    std::cout << "La clé public n'est pas celle lié a votre compte." << std::endl;
-                    continue;
+
+                auto result = transfer_eur_to_btc(user_command_part, currentUser, users);
+
+                if (std::holds_alternative<std::string>(result)) {
+                    std::cout << std::get<std::string>(result) << std::endl;
+                } else {
+                    bool success = std::get<bool>(result);
+                    std::cout << "Transfert réussi !" << std::endl;
                 }
 
-                double euros = stod(user_command_part[1]);
-                double btc_price = 85000.0; // prix constant pour l'instant
-                double montant_btc = euros / btc_price;
-                double montant_satoshis = btc_to_satochi(montant_btc);
-
-                UTXO new_utxo = create_utxo(currentUser, montant_satoshis, generate_random_number(50), 0);
-
-                currentUser.utxos.push_back(new_utxo);
-                currentUser.balance += montant_btc;
-                sync_user(users, currentUser);
-                export_user_in_registre("../registre/users.json", users);
-                
-            } else if (user_command_part[0] == "/mine") {
-                // /mine [nonce]
-                bool result = mine(blocks, stoi(user_command_part[1]), mempool);
-                
-            } else if (user_command_part[0] == "/blockchain") {
-                // /blockchain
-                for(const Block& block : blocks){
-                    view_block(block);
-                }
-                
-            } else if (user_command_part[0] == "/find_block_by_index") {
+            }  else if (user_command_part[0] == "/find_block_by_index") {
                 // /find_block_by_index [index]
                 std::optional<Block> result = find_block_by_index(blocks, stoi(user_command_part[1]));
                 if(result.has_value()){
@@ -221,80 +201,57 @@ int main() {
             } 
             
             
-            else if (user_command_part[0] == "/help") {
+
+
+
+            else if (user_command_part[0] == "/mine") {
+                // /mine [nonce]
+                bool result = mine(blocks, stoi(user_command_part[1]), mempool);
+                continue;
+                /////////////////////////////
+            } else if (user_command_part[0] == "/blockchain") {
+                for(const Block& block : blocks){
+                    view_block(block);
+                }
+                continue;
+            }else if (user_command_part[0] == "/help") {
+                // FONCTION D'AFFICHAGE //
                 help();
                 continue;
+                /////////////////////////////
             } else if (user_command_part[0] == "/d"){
                 currentUser = User("", "", "", 0.0, {});
                 std::cout << "Vous avez été déconnecté !";
-                return 0;
-            } else if (user_command == "/q"){
+                continue;
+            } else if (user_command_part[0] == "/q"){
                 std::cout << "A bientot !" << std::endl;
                 return false;
             } else {
                 std::cout << "La commande " << user_command_part[0] << " n'existe pas !" << std::endl;
                 continue;
             }
-
-
-
-
-
-
-
         } else { // Commandes qui ne demandent pas d'etre connecté a un compte 
             if (user_command_part[0] == "/c"){
                 // /c [publicKey]
-
-                std::optional<User> match = find_user_by_public_key(user_command_part[1], users);
-                
-                if(match.has_value()){
-                    currentUser = match.value();
-                    std::cout << "Vous êtes connecté a l'utilisateur : \n" << std::endl;
-                    std::cout << "privateKey : " << currentUser.privateKey << "\n" << std::endl;
-                    std::cout << "publicKey : " << currentUser.publicKey << "\n" << std::endl;
-                    std::cout << "address : " << currentUser.address << "\n" << std::endl;
-                    std::cout << "balance : " << currentUser.balance << "\n" << std::endl;
-
-                }else {
-                    std::cout << "Cette addresse n'est attribué a aucun utilisateur !" << std::endl;
-                    continue;
-                }
+                login(user_command_part, users, currentUser);
+                continue;
+                /////////////////////////////
             } else if (user_command_part[0] == "/users") {
                 for(User user : users) {
-                    std::cout << "→ adresse: " << user.address << ", balance: " << user.balance << ", publicKey: " << user.publicKey << "\n";
+                    std::cout << "-> adresse: " << user.address << ", balance: " << user.balance << ", publicKey: " << user.publicKey << "\n";
                 }
+                continue;
             } else if (user_command_part[0] == "/mempool") {
-                if(mempool.transactions.empty()){
-                    std::cout << "Le mempool est vide !" << std::endl;
-                } else {
-                    std::cout << mempool.transactions.size() << " transaction(s) en attente\n" << std::endl;
-                    for(Transaction item : mempool.transactions) {
-                        std::cout << "txid    : " << item.txid << "\n";
-                        std::cout << "montant : " << satochi_to_btc(item.value_btc) << " BTC\n";
-                        std::cout << "fee     : " << item.fee << " sats\n";
-                        std::cout << "inputs  : " << item.nb_input << "\n";
-                        std::cout << "outputs : " << item.nb_output << "\n";
-                        std::cout << "de      : ";
-                        for(std::string src : item.adresses_sources){
-                            std::cout << src << " ";
-                        }
-                        std::cout << "\n";
-                        std::cout << "vers    : ";
-                        for(std::string dest : item.adresses_dest){
-                            std::cout << dest << " ";
-                        }
-                        std::cout << "\n---\n";
-                    }
-                }
-            } 
-            
-            
-            
-            else if (user_command_part[0] == "/help") {
+                // FONCTION D'AFFICHAGE //
+                mempool_output(mempool.transactions);
+                continue;
+                /////////////////////////////
+            } else if (user_command_part[0] == "/help") {
+                // FONCTION D'AFFICHAGE //
                 help();
                 continue;
-            } else if (user_command == "/q"){
+                /////////////////////////////
+            } else if (user_command_part[0] == "/q"){
                 std::cout << "A bientot !" << std::endl;
                 return false;
             } else {
