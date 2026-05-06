@@ -122,3 +122,21 @@ void view_block(Block block) {
     }
     std::cout << "==========================================\n";
 }
+
+void find_block_by_hash_output(std::vector<Block> blocks, std::vector<std::string> user_command_part){
+    std::optional<Block> result = find_block_by_hash(blocks, user_command_part[1]);
+    if(result.has_value()){
+        view_block(result.value());
+    } else {
+        std::cout << "Aucun block ne correspond a cet index !" << std::endl;
+    }
+}
+
+void find_block_by_index_output(std::vector<Block> blocks, std::vector<std::string> user_command_part){
+    std::optional<Block> result = find_block_by_index(blocks, stoi(user_command_part[1]));
+    if(result.has_value()){
+        view_block(result.value());
+    } else {
+        std::cout << "Aucun block ne correspond a cet index !" << std::endl;
+    }
+}

@@ -8,5 +8,6 @@
 UTXO create_utxo(User user, double amount, std::string txid_transaction, int vout);
 std::optional<UTXO> find_utxo_by_txid_transaction(User user, std::string txid_transaction);
 double utxos_sum_balance(User user);
+void balance(User currentUser);
 
 #endif
