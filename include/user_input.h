@@ -5,6 +5,6 @@
 #include <vector>
 #include "entities.h"
 
-std::vector<std::string> user_input(User currentUser, std::string delimiter);
+std::vector<std::string> user_input(User& currentUser, std::string delimiter);
 
 #endif

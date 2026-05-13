@@ -6,6 +6,10 @@
 #include "entities.h"
 #include <variant>
 
-std::variant<bool, std::string> transfer_eur_to_btc(std::vector<std::string> user_command_part, User currentUser, std::vector<User> users);
+std::variant<bool, std::string> transfer_eur_to_btc(
+    std::vector<std::string> user_command_part, 
+    User& currentUser, 
+    std::vector<User>& users
+);
 
 #endif

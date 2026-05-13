@@ -7,6 +7,6 @@
 
 using namespace std;
 
-void swipe_user(User currentUser, std::vector<std::string> user_command_part, std::vector<User> users);
+void swipe_user(User& currentUser, std::vector<std::string> user_command_part, std::vector<User>& users);
 
 #endif

@@ -12,9 +12,9 @@ std::vector<User> read_users(std::string path);
 std::vector<Block> read_blockchain(std::string path);
 Mempool read_mempool(std::string path);
 
-void export_blockchain_in_registre(std::string path, std::vector<Block> blocks);
-void export_user_in_registre(std::string path, std::vector<User> users);
-void export_mempool_in_registre(std::string path, Mempool mempool);
+void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks);
+void export_user_in_registre(std::string path, std::vector<User>& users);
+void export_mempool_in_registre(std::string path, Mempool& mempool);
 
 
 #endif

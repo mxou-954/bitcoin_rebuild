@@ -7,28 +7,29 @@
 #include <iomanip>
 #include <sstream>
 #include <ctime>
+#include <windows.h>
 
-#include "include/entities.h"
-#include "include/generate_random_number.h"
-#include "include/sha256.h"
-#include "include/new_user.h"
-#include "include/split.h"
-#include "include/btc_to_satochi.h" 
-#include "include/is_currentUser.h"
-#include "include/find_user.h"
-#include "include/utxos.h"
-#include "include/block.h"
-#include "include/sync_user.h"
-#include "include/help.h"
-#include "include/write_and_read.h"
-#include "include/security_check_for_pay.h"
-#include "include/user_input.h"
-#include "include/transfer_eur_to_btc.h"
-#include "include/mempool_output.h"
-#include "include/login.h"
-#include "include/swipe_user.h"
-#include "include/transfer.h"
-#include "include/pay.h"
+#include "entities.h"
+#include "generate_random_number.h"
+#include "sha256.h"
+#include "new_user.h"
+#include "split.h"
+#include "btc_to_satochi.h" 
+#include "is_currentUser.h"
+#include "find_user.h"
+#include "utxos.h"
+#include "block.h"
+#include "sync_user.h"
+#include "help.h"
+#include "write_and_read.h"
+#include "security_check_for_pay.h"
+#include "user_input.h"
+#include "transfer_eur_to_btc.h"
+#include "mempool_output.h"
+#include "login.h"
+#include "swipe_user.h"
+#include "transfer.h"
+#include "pay.h"
 
 #include <openssl/sha.h>
 
@@ -36,15 +37,16 @@ using namespace std;
 
 int main() {
     srand(time(0));
+    SetConsoleOutputCP(CP_UTF8);
 
-    std::vector<User> users    = read_users("../registre/users.json");
-    std::vector<Block> blocks   = read_blockchain("../registre/blockchain.json");
-    Mempool mempool  = read_mempool("../registre/mempool.json");
+    std::vector<User> users    = read_users("./registre/users.json");
+    std::vector<Block> blocks   = read_blockchain("./registre/blockchain.json");
+    Mempool mempool  = read_mempool("./registre/mempool.json");
 
     User currentUser = User("", "", "", 0.0, {});
 
     for(int i =0; i<3; i++){
-        users.push_back(new_user());
+        users.push_back(new_user(users));
     };
 
     for(User u : users){
@@ -71,7 +73,7 @@ int main() {
         // NECESSITE D'ETRE CONNECTE 
         if(is_connected){
             if(user_command_part[0] == "/pay") {
-                // /pay [publicKey] [amount] [address]
+                // /pay [publicKey] [amount] [address] //amount en BTC
                 pay(user_command_part, users, currentUser, mempool);
                 continue;
                 /////////////////////////////
@@ -102,7 +104,12 @@ int main() {
                 /////////////////////////////
             } else if (user_command_part[0] == "/mine") {
                 // /mine [nonce]
-                bool result = mine(blocks, stoi(user_command_part[1]), mempool);
+                bool result = mine(blocks, stoi(user_command_part[1]), mempool, currentUser, users);
+                continue;
+                /////////////////////////////
+            } else if (user_command_part[0] == "/auto_mine") {
+                // /auto_mine
+                bool result = auto_mining(blocks, mempool, currentUser, users);
                 continue;
                 /////////////////////////////
             } else if (user_command_part[0] == "/blockchain") {

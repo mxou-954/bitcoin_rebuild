@@ -6,5 +6,5 @@
 
 using namespace std;
 
-User new_user();
+User new_user(std::vector<User>& users);
 #endif

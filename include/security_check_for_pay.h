@@ -8,8 +8,9 @@
 
 using namespace std;
 
-bool security_check_for_pay(User currentUser, std::optional<User> match_address, 
-                             std::optional<User> match_public_key, 
-                             std::vector<std::string> user_command_part);
+bool security_check_for_pay(User& currentUser, 
+                            User* match_address, 
+                            User* match_public_key, 
+                            std::vector<std::string> user_command_part);
                              
 #endif

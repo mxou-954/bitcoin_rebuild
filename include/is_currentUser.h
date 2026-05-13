@@ -6,5 +6,5 @@
 
 using namespace std;
 
-bool is_currentUser(User currentUser);
+bool is_currentUser(User& currentUser);
 #endif

@@ -2,6 +2,8 @@
 #include "entities.h"
 #include "generate_random_number.h"
 #include "write_and_read.h"
+#include "utxos.h"
+#include "sync_user.h"
 
 #include <sstream>
 #include <string>
@@ -43,7 +45,7 @@ std::optional<Block> find_block_by_hash(std::vector<Block> blocks, std::string h
 }
 
 Block new_block(std::vector<Block>& blockchain, 
-                std::vector<Transaction> transactions) {
+                std::vector<Transaction>& transactions) {
     
     Block last = blockchain.back();
 
@@ -63,7 +65,7 @@ Block new_block(std::vector<Block>& blockchain,
     return block;
 }
 
-bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool) {
+bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool, User& currentUser, std::vector<User>& users) {
     if(blockchain.empty()){
         blockchain.push_back(genesis_block());
         new_block(blockchain, mempool.transactions);
@@ -95,10 +97,85 @@ bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool) {
     block.hash     = computed_hash;
     block.resolved = true;
 
-    export_blockchain_in_registre("../registre/blockchain.json", blockchain);
+    export_blockchain_in_registre("./registre/blockchain.json", blockchain);
     
     std::cout << "Bloc miné ! nonce=" << nonce << std::endl;
     std::cout << "hash=" << computed_hash << std::endl;
+
+    double fee_sum = 0.0; //sat récompense mineur (block reward + somme fees)
+    double block_reward = 50000.0;
+    for(Transaction item : mempool.transactions) {
+        fee_sum += item.fee;
+    }
+    double reward_sum = fee_sum + block_reward;
+
+    UTXO utxo_reward = create_utxo(currentUser, reward_sum, block.hash, 0);
+    std::cout << "Vous avez miné le block, vous recevez : " << reward_sum << " satochis\n";
+    currentUser.utxos.push_back(utxo_reward);
+
+    currentUser.balance = utxos_sum_balance(currentUser);
+    sync_user(users, currentUser);
+    export_user_in_registre("./registre/users.json", users);
+
+    new_block(blockchain, mempool.transactions);
+    mempool.transactions.clear();
+    
+    return true;
+}
+
+bool auto_mining(std::vector<Block>& blockchain, Mempool& mempool, User& currentUser, std::vector<User>& users) {
+    if(blockchain.empty()){
+        blockchain.push_back(genesis_block());
+        new_block(blockchain, mempool.transactions);
+    }
+
+    Block& block = blockchain.back();
+    if(block.resolved){
+        std::cout << "Ce bloc est déjà résolu !" << std::endl;
+        return false;
+    }
+
+    std::string target(block.difficulty, '0');
+    int nonce = 0;
+    std::string computed_hash = std::string(block.difficulty, '1');
+
+    while(computed_hash.substr(0, block.difficulty) != target){
+        
+       std::stringstream ss;
+        ss << block.index
+        << block.prevHash
+        << block.timestamp
+        << nonce;
+    
+        computed_hash = sha256(ss.str());
+
+        nonce++;
+        std::cout << "Test du nonce : " << nonce << std::endl;
+    }
+
+    block.nonce    = nonce;
+    block.hash     = computed_hash;
+    block.resolved = true;
+
+    export_blockchain_in_registre("./registre/blockchain.json", blockchain);
+    
+    std::cout << "Bloc miné ! nonce=" << nonce << std::endl;
+    std::cout << "hash=" << computed_hash << std::endl;
+
+    double fee_sum = 0.0; //sat récompense mineur (block reward + somme fees)
+    double block_reward = 50000.0;
+    for(Transaction item : mempool.transactions) {
+        fee_sum += item.fee;
+    }
+    double reward_sum = fee_sum + block_reward;
+
+    UTXO utxo_reward = create_utxo(currentUser, reward_sum, block.hash, 0);
+    std::cout << "Vous avez miné le block, vous recevez : " << reward_sum << " satochis\n";
+    currentUser.utxos.push_back(utxo_reward);
+
+    currentUser.balance = utxos_sum_balance(currentUser);
+    sync_user(users, currentUser);
+    export_user_in_registre("./registre/users.json", users);
 
     new_block(blockchain, mempool.transactions);
     mempool.transactions.clear();

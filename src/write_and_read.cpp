@@ -18,7 +18,7 @@ void is_file_exist(std::string path) {
     file.close();
 }
 
-void export_user_in_registre(std::string path, std::vector<User> users){
+void export_user_in_registre(std::string path, std::vector<User>& users){
     json arr = json::array();
     
     for(User user : users){
@@ -83,7 +83,7 @@ std::vector<User> read_users(std::string path){
     return users;
 }
 
-void export_blockchain_in_registre(std::string path, std::vector<Block> blocks) {
+void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks) {
     json arr = json::array();
     
     for(Block block : blocks) {
@@ -212,7 +212,7 @@ std::vector<Block> read_blockchain(std::string path) {
 
 // ============ MEMPOOL ============
 
-void export_mempool_in_registre(std::string path, Mempool mempool) {
+void export_mempool_in_registre(std::string path, Mempool& mempool) {
     json arr = json::array();
     
     for(Transaction t : mempool.transactions){

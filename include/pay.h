@@ -7,6 +7,6 @@
 
 using namespace std;
 
-void pay(std::vector<std::string> user_command_part, std::vector<User> users, User currentUser, Mempool mempool);
+void pay(std::vector<std::string> user_command_part, std::vector<User>& users, User& currentUser, Mempool& mempool);
 
 #endif

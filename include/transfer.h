@@ -7,6 +7,10 @@
 
 using namespace std;
 
-void transfer(std::vector<std::string> user_command_part, User currentUser, std::vector<User> users);
+void transfer(
+    std::vector<std::string> user_command_part, 
+    User& currentUser, 
+    std::vector<User>& users
+);
 
 #endif

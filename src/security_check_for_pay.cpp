@@ -3,12 +3,12 @@
 #include "sha256.h"
 #include "utxos.h"
 
-bool security_check_for_pay(User currentUser, std::optional<User> match_address, std::optional<User> match_public_key, std::vector<std::string> user_command_part) {
-    if(!match_address.has_value()){
+bool security_check_for_pay(User& currentUser, User* match_address, User* match_public_key, std::vector<std::string> user_command_part) {
+    if(match_address == nullptr){
         std::cout << "L'adresse de destination n'appartient a aucun utilisateur !" << std::endl;
         return false;
     }
-    if(!match_public_key.has_value()){
+    if(match_public_key == nullptr){
         std::cout << "La clé public ne correspond pas a un utilisateur valide !" << std::endl;
         return false;
     }

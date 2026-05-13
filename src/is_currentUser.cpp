@@ -3,7 +3,7 @@
 
 #include "is_currentUser.h"
 
-bool is_currentUser(User currentUser){
+bool is_currentUser(User& currentUser){
     if(currentUser.privateKey == ""){
         return false;
     } else {

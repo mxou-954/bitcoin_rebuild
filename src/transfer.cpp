@@ -4,7 +4,11 @@
 #include <string>
 #include <iostream>
 
-void transfer(std::vector<std::string> user_command_part, User currentUser, std::vector<User> users){
+void transfer(
+    std::vector<std::string> user_command_part, 
+    User& currentUser, 
+    std::vector<User>& users
+){
     auto result = transfer_eur_to_btc(user_command_part, currentUser, users);
 
     if (std::holds_alternative<std::string>(result)) {

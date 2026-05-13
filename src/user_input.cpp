@@ -3,7 +3,7 @@
 #include "user_input.h"
 #include "split.h"
 
-std::vector<std::string> user_input(User currentUser, std::string delimiter) {
+std::vector<std::string> user_input(User& currentUser, std::string delimiter) {
     std::string user_command = "";
 
     if (currentUser.address == ""){

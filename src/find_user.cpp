@@ -3,22 +3,22 @@
 #include <string>
 #include <optional>
 
-std::optional<User> find_user_by_public_key(std::string publicKey, std::vector<User> users){
-    for(User u : users){
+User* find_user_by_public_key(std::string publicKey, std::vector<User>& users){
+    for(User& u : users){
         if(u.publicKey == publicKey){
-            return u;
+            return &u;
         }
     }
     std::cout << "Utilisateur introuvable !" << std::endl;
-    return std::nullopt;
+    return nullptr;
 }
 
-std::optional<User> find_user_by_address(std::string address, std::vector<User> users){
-    for(User u : users){
+User* find_user_by_address(std::string address, std::vector<User>& users){
+    for(User& u : users){
         if(u.address == address){
-            return u;
+            return &u;
         }
     }
     std::cout << "Utilisateur introuvable !" << std::endl;
-    return std::nullopt;
+    return nullptr;
 }
