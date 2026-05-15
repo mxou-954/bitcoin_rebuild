@@ -31,7 +31,7 @@ std::variant<bool, std::string> transfer_eur_to_btc(
     currentUser.balance += montant_satoshis;
 
     sync_user(users, currentUser);
-    export_user_in_registre("./registre/users.json", users, false);
+    export_user_in_registre("./registre/users.json", users);
 
     return true;
 }
