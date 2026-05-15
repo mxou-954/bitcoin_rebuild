@@ -1,7 +1,7 @@
 [
     {
         "address": "btc1npqpd^viZoGeiEZUT1F1JkvjwcByJ25j*rW$PAvNrcAz$5z#QZ",
-        "balance": 8821269.411764711,
+        "balance": 26468328.235294122,
         "privateKey": "LpM0WXU%pXH4^&rX8z!LMBVbaS%jCINt0qeiI%#qlBg6^xe2I#",
         "publicKey": "a5fee949dd6731425d10b015664b2b55ce7a85993b641d9c509854dc0b357524",
         "utxos": [
@@ -9,6 +9,12 @@
                 "amount": 8821269.411764711,
                 "public_key": "a5fee949dd6731425d10b015664b2b55ce7a85993b641d9c509854dc0b357524",
                 "txid_transaction": "a1a1c7060198f87e3365c91a74d1926c45c39aab1505e5362b66a9ade48fa435",
+                "vout": 0
+            },
+            {
+                "amount": 17647058.82352941,
+                "public_key": "a5fee949dd6731425d10b015664b2b55ce7a85993b641d9c509854dc0b357524",
+                "txid_transaction": "QhoXW#7%$wyU9sT3dpYk*QeuTYueh2q5n8g4fLyBI#xjEpP8vy",
                 "vout": 0
             }
         ]

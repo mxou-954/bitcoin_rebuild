@@ -31,38 +31,27 @@ void write_peers(std::vector<Node>& nodes) {
     file.close();
 }
 
-std::vector<Node> read_peers() {
-    std::vector<Node> nodes; 
+std::vector<Peer> read_peers() {
+    std::vector<Peer> peers;
 
     std::ifstream file(path);
-    if(!file.is_open()) return nodes;
-    
-    // Vérifie si vide
+    if(!file.is_open()) return peers;
+
     file.seekg(0, std::ios::end);
-    if(file.tellg() == 0) return nodes;
-    file.seekg(0, std::ios::beg);  // remet le curseur au début
-    
+    if(file.tellg() == 0) return peers;
+    file.seekg(0, std::ios::beg);
+
     json j;
     file >> j;
     file.close();
 
     for(auto& item : j){
-        std::vector<Peer> peers;
-        for(auto& u : item["peers"]){
-            Peer peer(
-                u["ip"],
-                u["port"],
-                u["connected"]
-            );
-            peers.push_back(peer);
-        }
-        Node node (
+        Peer peer(
             item["ip"],
             item["port"],
-            peers
+            false  // pas encore connecté au démarrage
         );
-        nodes.push_back(node);
+        peers.push_back(peer);
     }
-
-    return nodes;
+    return peers;
 }

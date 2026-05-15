@@ -34,6 +34,7 @@
 #include "p2pserv.h"
 #include "p2pcli.h"
 #include "thread"
+#include "write_and_read_peers.h"
 
 Node node;
 
@@ -43,6 +44,7 @@ int main() {
     srand(time(0));
     SetConsoleOutputCP(CP_UTF8);
     
+    node.peers = read_peers();
 
     std::vector<User> users    = read_users("./registre/users.json");
     std::vector<Block> blocks   = read_blockchain("./registre/blockchain.json");
