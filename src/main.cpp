@@ -51,6 +51,10 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     
     node.peers = read_peers();
+    printf("Peers charges : %zu\n", node.peers.size());
+    for(Peer& p : node.peers){
+        printf("-> %s:%d\n", p.ip.c_str(), p.port);
+    }
 
     std::vector<User> users    = read_users("./registre/users.json");
     std::vector<Block> blocks   = read_blockchain("./registre/blockchain.json");
@@ -180,6 +184,6 @@ int main() {
             }
         };
     };
-    
+
     WSACleanup();
 }

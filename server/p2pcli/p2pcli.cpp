@@ -30,6 +30,7 @@ int __cdecl start_client(Node& node, std::string message)
     hints.ai_protocol = IPPROTO_TCP;
 
     for(Peer& peer : node.peers){
+        printf("Tentative connexion a %s:%s\n", peer.ip.c_str(), DEFAULT_PORT);
         struct addrinfo *result = NULL, *ptr = NULL;
         SOCKET ConnectSocket = INVALID_SOCKET;
 
@@ -48,6 +49,7 @@ int __cdecl start_client(Node& node, std::string message)
 
             iResult = connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
             if(iResult == SOCKET_ERROR){
+                printf("connect failed: %d\n", WSAGetLastError());  // ← ajoute ça
                 closesocket(ConnectSocket);
                 ConnectSocket = INVALID_SOCKET;
                 continue;

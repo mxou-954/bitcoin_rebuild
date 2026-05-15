@@ -21,7 +21,8 @@ void is_file_exist(std::string path) {
     file.close();
 }
 
-void export_user_in_registre(std::string path, std::vector<User>& users, bool broadcast = true){
+void export_user_in_registre(std::string path, std::vector<User>& users, bool broadcast){
+    printf("export_user_in_registre appelé, broadcast=%d\n", broadcast);
     json arr = json::array();
     
     for(User user : users){
@@ -47,6 +48,7 @@ void export_user_in_registre(std::string path, std::vector<User>& users, bool br
     if(broadcast){
         std::string message = "NEW_USER " + arr.dump();
         std::cout << message << std::endl;
+        printf("broadcast actif, appel start_client\n");
         start_client(node, message);
     }
 
@@ -97,7 +99,8 @@ std::vector<User> read_users(std::string path){
     return users;
 }
 
-void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks, bool broadcast = true) {
+void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks, bool broadcast) {
+    printf("export_user_in_registre appelé, broadcast=%d\n", broadcast);
     json arr = json::array();
     
     for(Block block : blocks) {
@@ -170,6 +173,7 @@ void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks,
     if(broadcast){
         std::string message = "NEW_BLOCK " + arr.dump();
         std::cout << message << std::endl;
+        printf("broadcast actif, appel start_client\n");
         start_client(node, message);
     }
 
@@ -238,7 +242,8 @@ std::vector<Block> read_blockchain(std::string path) {
 
 // ============ MEMPOOL ============
 
-void export_mempool_in_registre(std::string path, Mempool& mempool, bool broadcast = true) {
+void export_mempool_in_registre(std::string path, Mempool& mempool, bool broadcast) {
+    printf("export_user_in_registre appelé, broadcast=%d\n", broadcast);
     json arr = json::array();
     
     for(Transaction t : mempool.transactions){
@@ -291,6 +296,7 @@ void export_mempool_in_registre(std::string path, Mempool& mempool, bool broadca
     if(broadcast){
         std::string message = "NEW_TRANSACTION " + arr.dump();
         std::cout << message << std::endl;
+        printf("broadcast actif, appel start_client\n");
         start_client(node, message);
     }
     
