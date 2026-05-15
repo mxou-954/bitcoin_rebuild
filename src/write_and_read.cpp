@@ -2,6 +2,9 @@
 #include <string>
 #include <iostream>
 #include "write_and_read.h"
+#include "p2pcli.h"
+
+extern Node node;
 
 // On exporte dans les registres les users, les utxos, les blocks
 
@@ -43,6 +46,10 @@ void export_user_in_registre(std::string path, std::vector<User>& users){
     
     std::ofstream file(path);
     file << arr.dump(4);
+
+    std::string message = "NEW_USER " + arr.dump();
+    start_client(node, message);
+
     file.close();
 }
 
@@ -53,7 +60,11 @@ std::vector<User> read_users(std::string path){
     std::ifstream file(path);
     if(!file.is_open()) return users;
     
-    // 2. Parser le texte en JSON
+    // Vérifie si vide
+    file.seekg(0, std::ios::end);
+    if(file.tellg() == 0) return users;
+    file.seekg(0, std::ios::beg);  // remet le curseur au début
+    
     json j;
     file >> j;
     file.close();
@@ -155,6 +166,10 @@ void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks)
 
     std::ofstream file(path);
     file << arr.dump(4);
+
+    std::string message = "NEW_BLOCK " + arr.dump();
+    start_client(node, message);
+
     file.close();
 }
 
@@ -164,7 +179,12 @@ std::vector<Block> read_blockchain(std::string path) {
     std::vector<Block> blocks;
     std::ifstream file(path);
     if(!file.is_open()) return blocks;
-    
+
+    // Vérifie si vide
+    file.seekg(0, std::ios::end);
+    if(file.tellg() == 0) return blocks;
+    file.seekg(0, std::ios::beg);  // remet le curseur au début
+
     json arr;
     file >> arr;
     file.close();
@@ -264,6 +284,10 @@ void export_mempool_in_registre(std::string path, Mempool& mempool) {
     
     std::ofstream file(path);
     file << arr.dump(4);
+
+    std::string message = "NEW_TRANSACTION " + arr.dump();
+    start_client(node, message);
+
     file.close();
 }
 
@@ -271,7 +295,11 @@ Mempool read_mempool(std::string path) {
     Mempool mempool;
     std::ifstream file(path);
     if(!file.is_open()) return mempool;
-    
+
+    file.seekg(0, std::ios::end);
+    if(file.tellg() == 0) return mempool;
+    file.seekg(0, std::ios::beg);  // remet le curseur au début
+
     json arr;
     file >> arr;
     file.close();

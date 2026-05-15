@@ -8,6 +8,7 @@
 #include <sstream>
 #include <ctime>
 #include <windows.h>
+#include <openssl/sha.h>
 
 #include "entities.h"
 #include "generate_random_number.h"
@@ -30,24 +31,32 @@
 #include "swipe_user.h"
 #include "transfer.h"
 #include "pay.h"
+#include "p2pserv.h"
+#include "p2pcli.h"
+#include "thread"
 
-#include <openssl/sha.h>
+Node node;
 
 using namespace std;
 
 int main() {
     srand(time(0));
     SetConsoleOutputCP(CP_UTF8);
+    
 
     std::vector<User> users    = read_users("./registre/users.json");
     std::vector<Block> blocks   = read_blockchain("./registre/blockchain.json");
     Mempool mempool  = read_mempool("./registre/mempool.json");
 
     User currentUser = User("", "", "", 0.0, {});
+    
+    std::thread(start_server, std::ref(node), std::ref(users), std::ref(blocks), std::ref(mempool)).detach();
 
-    for(int i =0; i<3; i++){
-        users.push_back(new_user(users));
-    };
+    // for(int i =0; i<3; i++){
+    //     users.push_back(new_user(users));
+    //     
+    // };
+    // export_user_in_registre("./registre/users.json", users);
 
     for(User u : users){
         std::cout << "\n";

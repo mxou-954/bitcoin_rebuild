@@ -76,4 +76,24 @@ struct Mempool {
     int max_size = 300;
 };
 
+struct Peer {
+    Peer() {}
+
+    Peer(std::string ip, int port, bool connected)
+        : ip(ip), port(port), connected(connected) {}
+    std::string ip;
+    int port;
+    bool connected;
+};
+
+struct Node {
+    Node() {}
+
+    Node(std::string ip, int port, std::vector<Peer>& peers)
+        : ip(ip), port(port), peers(peers) {}
+    std::string ip;
+    int port;
+    std::vector<Peer> peers;
+};
+
 #endif

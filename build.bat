@@ -1,1 +1,1 @@
-g++ src/*.cpp -o bitcoin -std=c++17 -lssl -lcrypto -lws2_32
+g++ src/*.cpp server/p2pcli/*.cpp server/p2pserv/*.cpp node/*.cpp -I./include -o bitcoin -std=c++17 -lssl -lcrypto -lws2_32

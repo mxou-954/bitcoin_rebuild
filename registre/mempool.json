@@ -1,0 +1,41 @@
+[
+    {
+        "adresses_dest": [
+            "btc1^rT#lB!p%Nfl7kJRAJhxFRu5Fyg2GjEVZm4x#rM454Li!umOJJ"
+        ],
+        "adresses_sources": [
+            "btc1npqpd^viZoGeiEZUT1F1JkvjwcByJ25j*rW$PAvNrcAz$5z#QZ"
+        ],
+        "fee": 2260.0,
+        "fee_per_vbyte": 10.0,
+        "input_utxos": [
+            {
+                "amount": 58823529.41176471,
+                "public_key": "a5fee949dd6731425d10b015664b2b55ce7a85993b641d9c509854dc0b357524",
+                "txid_transaction": "9Opcu6kP^Zg!ybK0kghhR6W0g&%O6TZe^PyJ3#MzR3iXYSMy&*",
+                "vout": 0
+            }
+        ],
+        "nb_adresses_src": 1,
+        "nb_input": 1,
+        "nb_output": 2,
+        "output_utxos": [
+            {
+                "amount": 8821269.411764711,
+                "public_key": "a5fee949dd6731425d10b015664b2b55ce7a85993b641d9c509854dc0b357524",
+                "txid_transaction": "a1a1c7060198f87e3365c91a74d1926c45c39aab1505e5362b66a9ade48fa435",
+                "vout": 0
+            },
+            {
+                "amount": 50000000.0,
+                "public_key": "dd351f0a163d609ba1430d4d6ce5ae4020995753ee1b05eff811235bbd9e7c27",
+                "txid_transaction": "a1a1c7060198f87e3365c91a74d1926c45c39aab1505e5362b66a9ade48fa435",
+                "vout": 1
+            }
+        ],
+        "timestamp": 1778752056,
+        "txid": "a1a1c7060198f87e3365c91a74d1926c45c39aab1505e5362b66a9ade48fa435",
+        "value_btc": 50000000.0,
+        "vsize": 226.0
+    }
+]
