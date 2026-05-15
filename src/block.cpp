@@ -97,7 +97,7 @@ bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool, User& cur
     block.hash     = computed_hash;
     block.resolved = true;
 
-    export_blockchain_in_registre("./registre/blockchain.json", blockchain);
+    export_blockchain_in_registre("./registre/blockchain.json", blockchain, false);
     
     std::cout << "Bloc miné ! nonce=" << nonce << std::endl;
     std::cout << "hash=" << computed_hash << std::endl;
@@ -115,7 +115,7 @@ bool mine(std::vector<Block>& blockchain, int nonce, Mempool& mempool, User& cur
 
     currentUser.balance = utxos_sum_balance(currentUser);
     sync_user(users, currentUser);
-    export_user_in_registre("./registre/users.json", users);
+    export_user_in_registre("./registre/users.json", users, false);
 
     new_block(blockchain, mempool.transactions);
     mempool.transactions.clear();
@@ -157,7 +157,7 @@ bool auto_mining(std::vector<Block>& blockchain, Mempool& mempool, User& current
     block.hash     = computed_hash;
     block.resolved = true;
 
-    export_blockchain_in_registre("./registre/blockchain.json", blockchain);
+    export_blockchain_in_registre("./registre/blockchain.json", blockchain, false);
     
     std::cout << "Bloc miné ! nonce=" << nonce << std::endl;
     std::cout << "hash=" << computed_hash << std::endl;
@@ -175,7 +175,7 @@ bool auto_mining(std::vector<Block>& blockchain, Mempool& mempool, User& current
 
     currentUser.balance = utxos_sum_balance(currentUser);
     sync_user(users, currentUser);
-    export_user_in_registre("./registre/users.json", users);
+    export_user_in_registre("./registre/users.json", users, false);
 
     new_block(blockchain, mempool.transactions);
     mempool.transactions.clear();

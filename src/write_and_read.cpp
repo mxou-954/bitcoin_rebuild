@@ -21,7 +21,7 @@ void is_file_exist(std::string path) {
     file.close();
 }
 
-void export_user_in_registre(std::string path, std::vector<User>& users){
+void export_user_in_registre(std::string path, std::vector<User>& users, bool broadcast = true){
     json arr = json::array();
     
     for(User user : users){
@@ -43,13 +43,15 @@ void export_user_in_registre(std::string path, std::vector<User>& users){
         j["utxos"] = utxos;
         arr.push_back(j);
     }
-    
+
+    if(broadcast){
+        std::string message = "NEW_USER " + arr.dump();
+        std::cout << message << std::endl;
+        start_client(node, message);
+    }
+
     std::ofstream file(path);
     file << arr.dump(4);
-
-    std::string message = "NEW_USER " + arr.dump() + "\n";
-    std::cout << message << std::endl;
-    start_client(node, message);
 
     file.close();
 }
@@ -95,7 +97,7 @@ std::vector<User> read_users(std::string path){
     return users;
 }
 
-void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks) {
+void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks, bool broadcast = true) {
     json arr = json::array();
     
     for(Block block : blocks) {
@@ -165,12 +167,14 @@ void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks)
         arr.push_back(j);
     }
 
+    if(broadcast){
+        std::string message = "NEW_BLOCK " + arr.dump();
+        std::cout << message << std::endl;
+        start_client(node, message);
+    }
+
     std::ofstream file(path);
     file << arr.dump(4);
-
-    std::string message = "NEW_BLOCK " + arr.dump() + "\n";
-    std::cout << message << std::endl;
-    start_client(node, message);
 
     file.close();
 }
@@ -234,7 +238,7 @@ std::vector<Block> read_blockchain(std::string path) {
 
 // ============ MEMPOOL ============
 
-void export_mempool_in_registre(std::string path, Mempool& mempool) {
+void export_mempool_in_registre(std::string path, Mempool& mempool, bool broadcast = true) {
     json arr = json::array();
     
     for(Transaction t : mempool.transactions){
@@ -283,13 +287,15 @@ void export_mempool_in_registre(std::string path, Mempool& mempool) {
         
         arr.push_back(transaction);
     }
+
+    if(broadcast){
+        std::string message = "NEW_TRANSACTION " + arr.dump();
+        std::cout << message << std::endl;
+        start_client(node, message);
+    }
     
     std::ofstream file(path);
     file << arr.dump(4);
-
-    std::string message = "NEW_TRANSACTION " + arr.dump() + "\n";
-    std::cout << message << std::endl;
-    start_client(node, message);
 
     file.close();
 }

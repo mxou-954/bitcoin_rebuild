@@ -72,7 +72,7 @@ void handle_client(SOCKET ClientSocket,
 
             std::lock_guard<std::mutex> lock(mtx);
             mempool.transactions.push_back(tx);
-            export_mempool_in_registre("./registre/mempool.json", mempool);
+            export_mempool_in_registre("./registre/mempool.json", mempool, false);
 
         } else if(message.find("NEW_BLOCK") != std::string::npos){
             std::string json_str = message.substr(10);
@@ -113,7 +113,7 @@ void handle_client(SOCKET ClientSocket,
 
             std::lock_guard<std::mutex> lock(mtx);
             blockchain.push_back(block);
-            export_blockchain_in_registre("./registre/blockchain.json", blockchain);
+            export_blockchain_in_registre("./registre/blockchain.json", blockchain, false);
 
         } else if(message.find("NEW_USER") != std::string::npos){
             std::string json_str = message.substr(9);
@@ -141,7 +141,7 @@ void handle_client(SOCKET ClientSocket,
                 );
                 users.push_back(user);
             }
-            export_user_in_registre("./registre/users.json", users);
+            export_user_in_registre("./registre/users.json", users, false);
 
         } else if(message == "PING"){
             iSendResult = send(ClientSocket, "PONG", 4, 0);

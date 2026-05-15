@@ -94,8 +94,8 @@ void pay(std::vector<std::string> user_command_part, std::vector<User>& users, U
         mempool.transactions.push_back(new_transaction);
     }
 
-    export_user_in_registre("./registre/users.json", users);
-    export_mempool_in_registre("./registre/mempool.json", mempool);
+    export_user_in_registre("./registre/users.json", users, false);
+    export_mempool_in_registre("./registre/mempool.json", mempool, false);
 
     std::cout << "Le payement a été effectué !" << std::endl;
                 
