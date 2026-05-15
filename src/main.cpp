@@ -41,6 +41,12 @@ Node node;
 using namespace std;
 
 int main() {
+    WSADATA wsaData;
+    if(WSAStartup(MAKEWORD(2,2), &wsaData) != 0){
+        printf("WSAStartup failed\n");
+        return 1;
+    }
+
     srand(time(0));
     SetConsoleOutputCP(CP_UTF8);
     
@@ -174,4 +180,6 @@ int main() {
             }
         };
     };
+    
+    WSACleanup();
 }

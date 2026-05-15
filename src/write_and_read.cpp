@@ -47,7 +47,8 @@ void export_user_in_registre(std::string path, std::vector<User>& users){
     std::ofstream file(path);
     file << arr.dump(4);
 
-    std::string message = "NEW_USER " + arr.dump();
+    std::string message = "NEW_USER " + arr.dump() + "\n";
+    std::cout << message << std::endl;
     start_client(node, message);
 
     file.close();
@@ -167,7 +168,8 @@ void export_blockchain_in_registre(std::string path, std::vector<Block>& blocks)
     std::ofstream file(path);
     file << arr.dump(4);
 
-    std::string message = "NEW_BLOCK " + arr.dump();
+    std::string message = "NEW_BLOCK " + arr.dump() + "\n";
+    std::cout << message << std::endl;
     start_client(node, message);
 
     file.close();
@@ -285,7 +287,8 @@ void export_mempool_in_registre(std::string path, Mempool& mempool) {
     std::ofstream file(path);
     file << arr.dump(4);
 
-    std::string message = "NEW_TRANSACTION " + arr.dump();
+    std::string message = "NEW_TRANSACTION " + arr.dump() + "\n";
+    std::cout << message << std::endl;
     start_client(node, message);
 
     file.close();
